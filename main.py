@@ -1,19 +1,11 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
+import asyncio
+from playwright.async_api import async_playwright
 import requests
-import time
 
 # Discord通知関数
 def send_discord_message(webhook_url, message):
     data = {"content": message}
     requests.post(webhook_url, json=data)
-
-# Selenium設定
-service = Service('./chromedriver')  # ChromeDriverのパス
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # 画面非表示
-driver = webdriver.Chrome(service=service, options=options)
 
 # チェック対象のURL（2つ）
 urls = [
@@ -23,14 +15,17 @@ urls = [
 
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
 
-# 空室チェック
-for url in urls:
-    driver.get(url)
-    time.sleep(5)  # ページ読み込み待ち
-    if "空室がありません" not in driver.page_source:
-        send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
-        break  # 最初に空いていたページだけ通知
-else:
-    print("空室なし")
+async def check_rooms():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        for url in urls:
+            await page.goto(url)
+            await page.wait_for_timeout(5000)  # ページ読み込み待ち
+            content = await page.content()
+            if "空室がありません" not in content:
+                send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
+                break
+        await browser.close()
 
-driver.quit()
+asyncio.run(check_rooms())
