@@ -6,7 +6,8 @@ from datetime import datetime
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
 
 urls = [
-    "https://reserve.tokyodisneyresort.jp/hotel/list/?showWay=&roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&cpListStr=&childAgeBedInform=01_3%7C&searchHotelCD=DHM&searchHotelDiv=&hotelName=&searchHotelName=&searchLayer=&searchRoomName=&hotelSearchDetail=true&checkPointStr=16&displayType=data-hotel&reservationStatus=1"
+    "https://reserve.tokyodisneyresort.jp/hotel/list/?showWay=&roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&cpListStr=&childAgeBedInform=01_3%7C&searchHotelCD=DHM&searchHotelDiv=&hotelName=&searchHotelName=&searchLayer=&searchRoomName=&hotelSearchDetail=true&checkPointStr=16&displayType=data-hotel&reservationStatus=1",
+    "https://reserve.tokyodisneyresort.jp/hotel/list/?showWay=&roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&cpListStr=&childAgeBedInform=01_3%7C&searchHotelCD=DHM&searchHotelDiv=&hotelName=&searchHotelName=&searchLayer=&searchRoomName=&hotelSearchDetail=true&checkPointStr=18&displayType=data-hotel&reservationStatus=1"
 ]
 
 notify_hours = [6, 12, 15, 18, 22]
