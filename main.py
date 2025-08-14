@@ -1,19 +1,22 @@
 import asyncio
 from playwright.async_api import async_playwright
 import requests
-import time
 from datetime import datetime
 
+# Discord Webhook URL（RyoさんのURLを使用）
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
 
+# チェック対象のURL（必要に応じて追加・変更可能）
 urls = [
     "https://reserve.tokyodisneyresort.jp/hotel/list/?roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&searchHotelCD=DHM&checkPointStr=16&reservationStatus=1",
     "https://reserve.tokyodisneyresort.jp/hotel/list/?roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&searchHotelCD=DHM&checkPointStr=18&reservationStatus=1"
 ]
 
+# 通知時間（空室なしでも通知する時間帯）
 notify_hours = [7, 13, 18]
 notified_times = set()
 
+# Discord通知関数
 def send_discord_message(webhook_url, message):
     data = {"content": message}
     try:
@@ -25,6 +28,7 @@ def send_discord_message(webhook_url, message):
     except Exception as e:
         print(f"Error sending message: {e}")
 
+# 空室チェック関数（混雑検出＋最大3時間待機）
 async def check_rooms():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -36,8 +40,8 @@ async def check_rooms():
             for url in urls:
                 wait_time = 30  # 初回待機時間（秒）
                 max_wait_time = 10800  # 最大待機時間（3時間）
-
                 total_waited = 0
+
                 while total_waited < max_wait_time:
                     try:
                         await page.goto(url)
@@ -55,7 +59,7 @@ async def check_rooms():
                             send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
                             await browser.close()
                             return
-                        break  # 空室なしでも混雑していなければ次のURLへ
+                        break
                     except Exception as e:
                         print(f"Error checking URL {url}: {e}")
                         break
