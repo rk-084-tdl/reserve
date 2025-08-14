@@ -6,11 +6,10 @@ from datetime import datetime
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
 
 urls = [
-    "https://reserve.tokyodisneyresort.jp/hotel/list/?roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&searchHotelCD=DHM&checkPointStr=16&reservationStatus=1",
-    "https://reserve.tokyodisneyresort.jp/hotel/list/?roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&searchHotelCD=DHM&checkPointStr=18&reservationStatus=1"
+    "https://reserve.tokyodisneyresort.jp/hotel/list/?showWay=&roomsNum=1&adultNum=2&childNum=1&stayingDays=1&useDate=20251211&cpListStr=&childAgeBedInform=01_3%7C&searchHotelCD=DHM&searchHotelDiv=&hotelName=&searchHotelName=&searchLayer=&searchRoomName=&hotelSearchDetail=true&checkPointStr=16&displayType=data-hotel&reservationStatus=1"
 ]
 
-notify_hours = [7, 13, 18]
+notify_hours = [6, 12, 15, 18, 22]
 notified_times = set()
 
 def send_discord_message(webhook_url, message):
@@ -39,7 +38,7 @@ async def check_rooms():
 
                 while total_waited < max_wait_time:
                     try:
-                        await page.goto(url)
+                        await page.goto(url, timeout=120000, wait_until="domcontentloaded")
                         await page.wait_for_timeout(5000)
                         content = await page.content()
 
