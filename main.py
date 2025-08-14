@@ -34,22 +34,37 @@ async def check_rooms():
             current_hour = now.hour
 
             for url in urls:
-                try:
-                    await page.goto(url)
-                    await page.wait_for_timeout(5000)
-                    content = await page.content()
-                    if "空室がありません" not in content:
-                        send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
-                        await browser.close()
-                        return
-                except Exception as e:
-                    print(f"Error checking URL {url}: {e}")
+                wait_time = 30  # 初回待機時間（秒）
+                max_wait_time = 10800  # 最大待機時間（3時間）
+
+                total_waited = 0
+                while total_waited < max_wait_time:
+                    try:
+                        await page.goto(url)
+                        await page.wait_for_timeout(5000)
+                        content = await page.content()
+
+                        if "ただいまサイトが混雑しております" in content:
+                            print(f"混雑中。{wait_time}秒待機して再試行します。")
+                            await asyncio.sleep(wait_time)
+                            total_waited += wait_time
+                            wait_time = min(wait_time * 2, 1800)  # 最大30分まで増加
+                            continue
+
+                        if "空室がありません" not in content:
+                            send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
+                            await browser.close()
+                            return
+                        break  # 空室なしでも混雑していなければ次のURLへ
+                    except Exception as e:
+                        print(f"Error checking URL {url}: {e}")
+                        break
 
             if current_hour in notify_hours and current_hour not in notified_times:
                 send_discord_message(webhook_url, f"⏰ {current_hour}時現在、空室はありませんでした。")
                 notified_times.add(current_hour)
 
-            time.sleep(10)
+            await asyncio.sleep(10)
 
 # 実行
 if __name__ == "__main__":
