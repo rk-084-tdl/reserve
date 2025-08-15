@@ -2,6 +2,10 @@ import asyncio
 from playwright.async_api import async_playwright
 import requests
 from datetime import datetime
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
+import uvicorn
+import threading
 
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
 
@@ -12,6 +16,16 @@ urls = [
 
 notify_hours = [6, 12, 15, 18, 22]
 notified_times = set()
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"status": "running"}
+
+@app.head("/")
+async def head_root(request: Request):
+    return Response(status_code=200)
 
 def send_discord_message(webhook_url, message):
     data = {"content": message}
@@ -65,5 +79,9 @@ async def check_rooms():
 
             await asyncio.sleep(10)
 
-if __name__ == "__main__":
+def start_checker():
     asyncio.run(check_rooms())
+
+if __name__ == "__main__":
+    threading.Thread(target=start_checker).start()
+    uvicorn.run(app, host="0.0.0.0", port=10000)
