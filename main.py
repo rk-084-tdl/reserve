@@ -23,8 +23,8 @@ app = FastAPI()
 async def root():
     return {"status": "running"}
 
-@app.head("/")
-async def head_root(request: Request):
+@app.api_route("/", methods=["HEAD"])
+async def handle_head():
     return Response(status_code=200)
 
 def send_discord_message(webhook_url, message):
@@ -41,7 +41,7 @@ def send_discord_message(webhook_url, message):
 async def check_rooms():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
+
         while True:
             now = datetime.now()
             current_hour = now.hour
@@ -53,9 +53,15 @@ async def check_rooms():
 
                 while total_waited < max_wait_time:
                     try:
-                        await page.goto(url, timeout=120000, wait_until="domcontentloaded")
+                        context = await browser.new_context()
+                        page = await context.new_page()
+
+                        await page.goto(url, timeout=180000, wait_until="domcontentloaded")
                         await page.wait_for_timeout(5000)
                         content = await page.content()
+
+                        await page.close()
+                        await context.close()
 
                         if "ただいまサイトが混雑しております" in content:
                             print(f"混雑中。{wait_time}秒待機して再試行します。")
@@ -80,8 +86,13 @@ async def check_rooms():
             await asyncio.sleep(10)
 
 def start_checker():
-    asyncio.run(check_rooms())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(check_rooms())
 
+# Botをバックグラウンドで起動
+threading.Thread(target=start_checker, daemon=True).start()
+
+# FastAPIアプリ起動
 if __name__ == "__main__":
-    threading.Thread(target=start_checker).start()
     uvicorn.run(app, host="0.0.0.0", port=10000)
