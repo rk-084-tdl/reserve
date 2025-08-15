@@ -4,7 +4,6 @@ import requests
 from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
-import uvicorn
 import threading
 
 webhook_url = "https://discord.com/api/webhooks/1405412897470812180/fNXQTTLlTYYDnEC5YNfzjingsFhlKgp3sVAnzsGAApVinq5lro0-At-OK1h1uryvVdW2"
@@ -69,7 +68,6 @@ async def check_rooms():
                             total_waited += wait_time
                             wait_time = min(wait_time * 2, 1800)
                             continue
-
                         if "空室がありません" not in content:
                             send_discord_message(webhook_url, f"🎉 空室あり！予約ページはこちら：{url}")
                             await browser.close()
@@ -92,7 +90,3 @@ def start_checker():
 
 # Botをバックグラウンドで起動
 threading.Thread(target=start_checker, daemon=True).start()
-
-# FastAPIアプリ起動
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=10000)
